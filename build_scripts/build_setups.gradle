@@ -1,0 +1,24 @@
+apply plugin: 'spring-boot'
+apply plugin: 'io.spring.dependency-management'
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:Camden.SR5"
+    }
+}
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+// Specify the gradle wrapper version
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.1'
+}

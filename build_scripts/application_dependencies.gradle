@@ -1,0 +1,11 @@
+// Declare application repositories and dependencies
+// Auto manage all spring boot dependencies
+apply plugin: 'java'
+
+dependencies {
+    // For spring zuul
+    compile('org.springframework.cloud:spring-cloud-starter-zuul')
+
+    // For spring cloud config client
+    compile('org.springframework.cloud:spring-cloud-config-client')
+}

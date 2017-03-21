@@ -1,0 +1,13 @@
+server:
+  port: 8889
+
+logging:
+  level:
+    com.netflix.discovery: 'OFF'
+    org.springframework.cloud: 'DEBUG'
+
+zuul:
+  routes:
+    product:
+      path: /products/**
+      url: http://localhost:8081/

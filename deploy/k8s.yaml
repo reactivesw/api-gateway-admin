@@ -1,0 +1,51 @@
+kind: List
+apiVersion: v1
+items:
+- kind: Deployment
+  apiVersion: extensions/v1beta1
+  metadata:
+    name: product
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          name: product
+      spec:
+        containers:
+        - name: product
+          image: reactivesw/product:0.0.1
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 80
+          env:
+          - name: server_port
+            value: "80"
+          - name: spring_datasource_url
+            value: jdbc:postgresql://pg-data/product
+          - name: spring_cloud_config_uri
+            value: http://reactivesw-config
+          - name: producttype_service_uri
+            value: http://product-type/
+          - name: inventory_service_uri
+            value: http://inventory/
+          - name: jwt_secret
+            valueFrom:
+              secretKeyRef:
+                name: reactivesw-secret
+                key: jwt.secret
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: product
+    labels:
+      name: product
+  spec:
+    type: NodePort
+    ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30009
+    selector:
+      name: product
+

@@ -1,0 +1,25 @@
+buildscript {
+    ext {
+        springBootVersion = '1.5.1.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath "io.spring.gradle:dependency-management-plugin:0.5.2.RELEASE"
+        //for docker build
+        classpath('se.transmode.gradle:gradle-docker:1.2')
+        // for unit test code coverage  -- need to find a way to put it in its file
+        classpath('com.palantir:jacoco-coverage:0.4.0')
+    }
+}
+
+apply from: 'build_scripts/build_setups.gradle'
+
+apply from: 'build_scripts/application_version.gradle'
+
+apply from: 'build_scripts/application_dependencies.gradle'
+
+apply from: 'build_scripts/docker_build.gradle'
