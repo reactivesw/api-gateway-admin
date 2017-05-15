@@ -1,17 +1,18 @@
-apply plugin: 'spring-boot'
-apply plugin: 'io.spring.dependency-management'
-
+// This should be the first `apply from` file.
 repositories {
     jcenter()
     mavenCentral()
-}
-
-
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:Camden.SR5"
+    // For spring config `M1`
+    maven {
+        url 'https://repo.spring.io/libs-milestone'
+    }
+    // For github lib
+    maven {
+        url 'https://github.com/reactivesw/commons/raw/master/lib'
     }
 }
+
+apply plugin: 'java'
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8
