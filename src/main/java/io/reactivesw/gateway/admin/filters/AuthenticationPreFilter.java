@@ -3,12 +3,14 @@ package io.reactivesw.gateway.admin.filters;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import io.reactivesw.gateway.admin.config.AuthFilterConfig;
+import io.reactivesw.gateway.admin.model.VerifyBody;
 import io.reactivesw.gateway.admin.model.VerifyResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -18,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import static com.netflix.zuul.context.RequestContext.getCurrentContext;
 
 /**
- * Authentication filter for checkout customer's authorization.
+ * Authentication filter for check admin's session and permission status.
  */
 @Component
 public class AuthenticationPreFilter extends ZuulFilter {
@@ -99,16 +101,18 @@ public class AuthenticationPreFilter extends ZuulFilter {
     String token = request.getHeader("authorization");
     VerifyResult verifyResult = checkAuthentication(token, ctx.getRouteHost().getHost(),
         request.getMethod());
+
     if (verifyResult != null && verifyResult.isLogin() && verifyResult.isHashPermission()) {
-      // if true, then set the customerId to header
+      // if true, then set the adminId to header
       ctx.addZuulRequestHeader("adminId", verifyResult.getAdminId());
       LOG.info("Exit. check auth success.");
+
     } else {
       // stop routing and return auth failed.
       ctx.unset();
-      if (!verifyResult.isLogin()) {
+      if (verifyResult == null || !verifyResult.isLogin()) {
         ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
-      } else if (verifyResult.isHashPermission()) {
+      } else if (!verifyResult.isHashPermission()) {
         ctx.setResponseStatusCode(HttpStatus.FORBIDDEN.value());
       }
       LOG.info("Exit. check auth failed.");
@@ -121,22 +125,24 @@ public class AuthenticationPreFilter extends ZuulFilter {
    * Check the auth status
    *
    * @param tokenString String
-   * @return the customer id
+   * @return VerifyResult
    */
   public VerifyResult checkAuthentication(String tokenString, String path, String action) {
     LOG.debug("Enter. token: {}", tokenString);
 
     try {
       String token = tokenString.substring(7);
-      String uri = authUri + "status?token=" + token;
-      LOG.debug("AuthUri: {}", uri);
+      VerifyBody verifyBody = new VerifyBody(token, path, action);
+      String uri = authUri + "status/";
+      LOG.debug("AuthUri: {}, body: {}.", uri, verifyBody);
 
-      VerifyResult result = restTemplate.getForObject(uri, VerifyResult.class);
+      VerifyResult result = restTemplate.postForObject(uri, verifyBody,
+          VerifyResult.class);
 
       LOG.debug("Exit. verifyResult: {}", result);
       return result;
     } catch (RestClientException | NullPointerException ex) {
-      LOG.debug("Get customerId from authentication service failed.", ex);
+      LOG.debug("Get AdminId from authentication service failed.", ex);
       return null;
     }
   }
