@@ -109,7 +109,8 @@ public class AuthenticationPreFilter extends ZuulFilter {
 
     } else {
       // stop routing and return auth failed.
-      ctx.unset();
+      ctx.setSendZuulResponse(false);
+      ctx.addZuulResponseHeader("Access-Control-Allow-Origin",request.getHeader("Origin"));
       if (verifyResult == null || !verifyResult.isLogin()) {
         ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
       } else if (!verifyResult.isHashPermission()) {
